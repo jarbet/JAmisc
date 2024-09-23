@@ -1,0 +1,35 @@
+name: R
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]  # Define both macOS and Windows
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up latest version of R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'latest'  # Use the latest stable version of R
+
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes", "rcmdcheck"))
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
+      - name: Check
+        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+        shell: Rscript {0}
